@@ -43,7 +43,92 @@ class RandomPlayer(Player):
                 Rotation.Clockwise,
             ])
 
-class SaisPlayer(Player):
+class Version1(Player):
+    def __init__(self, seed=None):
+        self.random = Random(seed)
+
+    def print_board(self, board):
+        print("--------")
+        for y in range(24):
+            s = ""
+            for x in range(10):
+                if (x,y) in board.cells:
+                    s += "#"
+                else:
+                    s += "."
+            print(s, y)
+
+    def moveTowardTarget(self, a, rotation, board):
+        landed = False
+        sandbox = board.clone()
+
+        # i = 0
+        # while i < rotations:
+            #res = sandbox.rotate(Rotation.Clockwise)
+            #if res:
+                #landed = True + break
+            # else i++
+        
+        #while not lsnfrf
+
+
+        for i in range(rotation):
+            landed = sandbox.rotate(Rotation.Clockwise)
+            if landed:
+                break
+
+
+        if (min(x for (x,y) in sandbox.falling.cells) > a): 
+            print("Reached")
+            while (min(x for (x,y) in sandbox.falling.cells) > a):
+                print("Reached2")
+                landed = sandbox.move(Direction.Left)
+                if landed:
+                    break
+
+        else:
+            while (max(x for (x,y) in sandbox.falling.cells) < 9) and (min(x for (x,y) in sandbox.falling.cells) != a):
+                landed = sandbox.move(Direction.Right)
+                if landed: 
+                    break
+     
+        if not landed:
+            sandbox.move(Direction.Drop) 
+
+        return self.scoreBoard(sandbox)
+        
+    def choose_action(self, board):
+        #self.print_board(board)
+        currentScore = 0
+        xpos = 0
+        rotation = 0
+        for x in range(10):
+            for rotations in range(4):
+
+                score = self.moveTowardTarget(x, rotations, board)
+                if score > currentScore:
+                    currentScore = score
+                    xpos = x
+                    rotation = rotations
+
+        for i in range(rotation):
+            yield Rotation.Clockwise
+
+        if (min(x for (x,y) in board.falling.cells) > xpos): 
+            while (min(x for (x,y) in board.falling.cells) > xpos):
+                yield Direction.Left
+        else:
+            while (max(x for (x,y) in board.falling.cells) < 9) and (min(x for (x,y) in board.falling.cells) != xpos):
+                yield Direction.Right     
+
+        yield Direction.Drop     
+
+    def scoreBoard(self, sandbox):
+        return min(y for (x,y) in sandbox.cells)
+    
+
+
+class Version2(Player):
     def __init__(self, seed=None):
         self.random = Random(seed)
 
@@ -113,4 +198,4 @@ class SaisPlayer(Player):
 
 
 #SelectedPlayer = RandomPlayer
-SelectedPlayer = SaisPlayer
+SelectedPlayer = Version1
