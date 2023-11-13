@@ -79,7 +79,6 @@ class Version1(Player):
 
 
         if (min(x for (x,y) in sandbox.falling.cells) > a): 
-            print("Reached")
             while (min(x for (x,y) in sandbox.falling.cells) > a):
                 print("Reached2")
                 landed = sandbox.move(Direction.Left)
@@ -110,7 +109,7 @@ class Version1(Player):
                     currentScore = score
                     xpos = x
                     rotation = rotations
-
+                    
         for i in range(rotation):
             yield Rotation.Clockwise
 
