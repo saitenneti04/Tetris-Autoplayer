@@ -1,7 +1,7 @@
 from board import Direction, Rotation, Action
 from random import Random
 import time
-
+global_counter = 0
 
 
 class Player:
@@ -493,7 +493,7 @@ class Version5(Player):
 
         yield Direction.Drop     
 
-    #we need to look at scoring algorithms only, so only modify source code below
+    
     def scoreBoard(self, sandbox):
         score = 0
         score += self.uniformHeights(sandbox)
@@ -503,7 +503,7 @@ class Version5(Player):
     
     #max height
     def minHeight(self, sandbox):
-        return 1.05 * min(y for (x,y) in sandbox.cells)
+        return 1 * min(y for (x,y) in sandbox.cells)
     
     #bumps
     def uniformHeights(self, sandbox):
@@ -519,13 +519,12 @@ class Version5(Player):
         for i in range(9):
             score += abs(lowest_y_for_x[i] - lowest_y_for_x[i+1])
         
-        return -1.2 * (score)
+        return -1.05 * (score)
 
     
 
     def boardGaps(self, sandbox):
         score = 0
-
         for x in range(sandbox.width):
             for y in range(sandbox.height): 
                 if (x,y) in sandbox.cells:
@@ -535,6 +534,9 @@ class Version5(Player):
                     break
 
         return score
+    
+    
+
 
   
 #SelectedPlayer = Version1
