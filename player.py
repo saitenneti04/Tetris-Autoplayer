@@ -105,7 +105,7 @@ class Version5(Player):
         for i in range(9):
             score += abs(lowest_y_for_x[i] - lowest_y_for_x[i+1])
         
-        return -1.22 * (score)
+        return -1.2 * (score)
 
     
 
@@ -116,7 +116,7 @@ class Version5(Player):
                 if (x,y) in sandbox.cells:
                     for a in range(y+1, sandbox.height):
                         if (x, a) not in sandbox.cells:
-                            score -=10
+                            score -=11
                     break
 
         return score
