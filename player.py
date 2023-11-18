@@ -522,7 +522,7 @@ class Version5(Player):
         return -1.2 * (score)
 
     
-    #holes
+
     def boardGaps(self, sandbox):
         score = 0
 
