@@ -294,7 +294,7 @@ class Version3(Player):
             score += abs(lowest_y_for_x[i] - lowest_y_for_x[i+1])
         
         return -1 * (score)
-    #compare 
+
     
     #holes
     def boardGaps(self, sandbox):
