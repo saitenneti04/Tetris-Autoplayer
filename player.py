@@ -116,7 +116,7 @@ class Version5(Player):
                 if (x,y) in sandbox.cells:
                     for a in range(y+1, sandbox.height):
                         if (x, a) not in sandbox.cells:
-                            score -=11
+                            score -=12
                     break
 
         return score
