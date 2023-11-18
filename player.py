@@ -105,7 +105,7 @@ class Version5(Player):
         for i in range(9):
             score += abs(lowest_y_for_x[i] - lowest_y_for_x[i+1])
         
-        return -1.26 * (score)
+        return -1.3 * (score)
 
     
 
