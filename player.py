@@ -3,45 +3,11 @@ from random import Random
 import time
 
 
+
 class Player:
     def choose_action(self, board):
         raise NotImplementedError
 
-
-class RandomPlayer(Player):
-    def __init__(self, seed=None):
-        self.random = Random(seed)
-
-    def print_board(self, board):
-        print("--------")
-        for y in range(24):
-            s = ""
-            for x in range(10):
-                if (x,y) in board.cells:
-                    s += "#"
-                else:
-                    s += "."
-            print(s, y)
-                
-
-    def choose_action(self, board):
-        self.print_board(board)
-        time.sleep(0.5)
-        if self.random.random() > 0.97:
-            # 3% chance we'll discard or drop a bomb
-            return self.random.choice([
-                Action.Discard,
-                Action.Bomb,
-            ])
-        else:
-            # 97% chance we'll make a normal move
-            return self.random.choice([
-                Direction.Left,
-                Direction.Right,
-                Direction.Down,
-                Rotation.Anticlockwise,
-                Rotation.Clockwise,
-            ])
 
 class Version1(Player):
     def __init__(self, seed=None):
@@ -62,21 +28,10 @@ class Version1(Player):
         landed = False
         sandbox = board.clone()
 
-        # i = 0
-        # while i < rotations:
-            #res = sandbox.rotate(Rotation.Clockwise)
-            #if res:
-                #landed = True + break
-            # else i++
-        
-        #while not lsnfrf
-
-
         for i in range(rotation):
             landed = sandbox.rotate(Rotation.Clockwise)
             if landed:
                 break
-
 
         if (min(x for (x,y) in sandbox.falling.cells) > a): 
             while (min(x for (x,y) in sandbox.falling.cells) > a):
@@ -109,7 +64,7 @@ class Version1(Player):
                     currentScore = score
                     xpos = x
                     rotation = rotations
-                    
+
         for i in range(rotation):
             yield Rotation.Clockwise
 
@@ -124,6 +79,8 @@ class Version1(Player):
 
     def scoreBoard(self, sandbox):
         return min(y for (x,y) in sandbox.cells)
+    
+    
     
 
 
@@ -143,37 +100,47 @@ class Version2(Player):
             print(s, y)
 
     def moveTowardTarget(self, a, rotation, board):
+        landed = False
         sandbox = board.clone()
-        if sandbox.next is None:
-            return 0
+
         for i in range(rotation):
-            sandbox.rotate(Rotation.Clockwise)
+            landed = sandbox.rotate(Rotation.Clockwise)
+            if landed:
+                break
 
         if (min(x for (x,y) in sandbox.falling.cells) > a): 
             while (min(x for (x,y) in sandbox.falling.cells) > a):
-                sandbox.move(Direction.Left)
+                landed = sandbox.move(Direction.Left)
+                if landed:
+                    break
+
         else:
             while (max(x for (x,y) in sandbox.falling.cells) < 9) and (min(x for (x,y) in sandbox.falling.cells) != a):
-                sandbox.move(Direction.Right)       
-        sandbox.move(Direction.Drop) 
+                landed = sandbox.move(Direction.Right)
+                if landed: 
+                    break
+     
+        if not landed:
+            sandbox.move(Direction.Drop) 
+
 
         return self.scoreBoard(sandbox)
         
     def choose_action(self, board):
         #self.print_board(board)
-        time.sleep(0.5)
-        currentScore = 0
+        currentScore = -100000000
         xpos = 0
         rotation = 0
         for x in range(10):
             for rotations in range(4):
-                if board.next != None:
-                    score = self.moveTowardTarget(x, rotations, board)
-                    if score > currentScore:
-                        currentScore = score
-                        xpos = x
-                        rotation = rotations
 
+                score = self.moveTowardTarget(x, rotations, board)
+                if score > currentScore:
+                    currentScore = score
+                    xpos = x
+                    rotation = rotations
+       
+ 
         for i in range(rotation):
             yield Rotation.Clockwise
 
@@ -186,15 +153,172 @@ class Version2(Player):
 
         yield Direction.Drop     
 
+    #we need to look at scoring algorithms only, so only modify source code below
+    def scoreBoard(self, sandbox):
+        score = 0
+        score += self.uniformHeights(sandbox)
+        score += self.boardGaps(sandbox)
+        score += self.minHeight(sandbox)
+        return score
+    
+    #max height
+    def minHeight(self, sandbox):
+        return 2 * min(y for (x,y) in sandbox.cells)
+    
+    #bumps
+    def uniformHeights(self, sandbox):
+        
+        score = 0
+        comparision = min(y for (x,y) in sandbox.cells) * 10
+
+        lowest_y_for_x = {x: 23 for x in range(10)}
+
+        for (x,y) in sandbox.cells:
+            if y < lowest_y_for_x[x]:
+                lowest_y_for_x[x] = y
+
+        for i in range(10):
+            score += lowest_y_for_x[i]
+        print(comparision - score)
+        return 3 * (comparision - score)
+    #compare 
+    
+    #holes
+    def boardGaps(self, sandbox):
+        score = 0
+
+        for x in range(sandbox.width):
+            for y in range(sandbox.height): 
+                if (x,y) in sandbox.cells:
+                    for a in range(y+1, sandbox.height):
+                        if (x, a) not in sandbox.cells:
+                            score -=10
+                    break
+
+        return score
+
+
+class Version3(Player):
+    def __init__(self, seed=None):
+        self.random = Random(seed)
+
+    def print_board(self, board):
+        print("--------")
+        for y in range(24):
+            s = ""
+            for x in range(10):
+                if (x,y) in board.cells:
+                    s += "#"
+                else:
+                    s += "."
+            print(s, y)
+
+    def moveTowardTarget(self, a, rotation, board):
+        landed = False
+        sandbox = board.clone()
+
+        for i in range(rotation):
+            landed = sandbox.rotate(Rotation.Clockwise)
+            if landed:
+                break
+
+        if (min(x for (x,y) in sandbox.falling.cells) > a): 
+            while (min(x for (x,y) in sandbox.falling.cells) > a):
+                landed = sandbox.move(Direction.Left)
+                if landed:
+                    break
+
+        else:
+            while (max(x for (x,y) in sandbox.falling.cells) < 9) and (min(x for (x,y) in sandbox.falling.cells) != a):
+                landed = sandbox.move(Direction.Right)
+                if landed: 
+                    break
+     
+        if not landed:
+            sandbox.move(Direction.Drop) 
+
+
+        return self.scoreBoard(sandbox)
+        
+    def choose_action(self, board):
+        #self.print_board(board)
+        currentScore = -100000000
+        xpos = 0
+        rotation = 0
+        for x in range(10):
+            for rotations in range(4):
+
+                score = self.moveTowardTarget(x, rotations, board)
+                if score > currentScore:
+                    currentScore = score
+                    xpos = x
+                    rotation = rotations
+       
+ 
+        for i in range(rotation):
+            yield Rotation.Clockwise
+
+        if (min(x for (x,y) in board.falling.cells) > xpos): 
+            while (min(x for (x,y) in board.falling.cells) > xpos):
+                yield Direction.Left
+        else:
+            while (max(x for (x,y) in board.falling.cells) < 9) and (min(x for (x,y) in board.falling.cells) != xpos):
+                yield Direction.Right     
+
+        yield Direction.Drop     
+
+    #we need to look at scoring algorithms only, so only modify source code below
+    def scoreBoard(self, sandbox):
+        score = 0
+        score += self.uniformHeights(sandbox)
+        score += self.boardGaps(sandbox)
+        score += self.minHeight(sandbox)
+        return score
+    
+    #max height
+    def minHeight(self, sandbox):
+        return 2 * min(y for (x,y) in sandbox.cells)
+    
+    #bumps
+    def uniformHeights(self, sandbox):
+        
+        score = 0
+
+        lowest_y_for_x = {x: 23 for x in range(10)}
+
+        for (x,y) in sandbox.cells:
+            if y < lowest_y_for_x[x]:
+                lowest_y_for_x[x] = y
+
+        for i in range(9):
+            score += abs(lowest_y_for_x[i] - lowest_y_for_x[i+1])
+        
+        return -1 * (score)
+    #compare 
+    
+    #holes
+    def boardGaps(self, sandbox):
+        score = 0
+
+        for x in range(sandbox.width):
+            for y in range(sandbox.height): 
+                if (x,y) in sandbox.cells:
+                    for a in range(y+1, sandbox.height):
+                        if (x, a) not in sandbox.cells:
+                            score -=10
+                    break
+
+        return score
 
 
         
-    def scoreBoard(self, sandbox):
-        return min(y for (x,y) in sandbox.cells)
+
+
+
+    
     
 
 
-
-
-#SelectedPlayer = RandomPlayer
-SelectedPlayer = Version1
+#SelectedPlayer = Version1
+#SelectedPlayer = Version2
+SelectedPlayer = Version3
